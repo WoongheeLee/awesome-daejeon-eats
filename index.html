@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awesome Daejeon Eats</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; white-space: nowrap; }
+        .checkbox-cell { text-align: center; }
+        #contributors { margin-top: 30px; }
+        #contributors ul { list-style-type: none; padding: 0; }
+        #contributors li { margin-bottom: 10px; }
+        .dataTables_wrapper .dataTables_filter { margin-bottom: 10px; }
+        .dataTables_wrapper .dataTables_filter input { margin-left: 5px; }
+        #restaurantTable th { height: 50px; vertical-align: middle; }
+        .no-wrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; } /* 업종 열 스타일 */
+        .center-align{
+            text-align: center;
+        }
+        .visit-count {
+            font-weight: bold;
+            color: #000000;
+            margin: 0 5px;
+        }
+        .visit-button {
+            cursor: pointer;
+            padding: 2px 5px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .info-box {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            margin-bottom: 15px;
+            padding: 4px 12px;
+        }
+
+        /* DataTables의 hover 스타일을 오버라이드 (특정성 증가) */
+        table.dataTable.hover tbody tr:hover,
+        table.dataTable.display tbody tr:hover {
+            background-color: #2222221f !important;
+        }
+        
+
+    </style>
+</head>
+<body>
+    <h1>🍽️ <b>Awesome Daejeon Eats</b></h1>
+
+    <div class="info-box">
+        <p><strong>📌 안내:</strong> 방문 횟수는 현재 사용 중인 기기의 브라우저에만 저장됩니다. 다른 기기나 브라우저에서는 이 정보가 공유되지 않으며, 브라우저 데이터를 삭제하면 초기화됩니다.</p>
+    </div>    
+
+    <h2>목차</h2>
+    <ul>
+        <li><a href="#restaurants">대전 맛집 목록</a></li>
+        <li><a href="#contributors">기여자</a></li>
+    </ul>
+
+    <h2 id="restaurants">대전 맛집 목록</h2>
+    <table id="restaurantTable" class="display">
+        <thead>
+            <tr>
+                <th class="center-align">🏙️ 지역</th>
+                <th class="center-align">🏠 상호</th>
+                <th class="center-align">🍽️ 업종</th>
+                <th>📝 메뉴 & 감상</th>
+                <th class="center-align">🔢 방문 횟수</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 데이터는 JavaScript로 채워집니다 -->
+        </tbody>
+    </table>
+
+    <div id="contributors">
+        <h2>👥 기여자</h2>
+        <ul>
+            <li>🌟<b>한규원</b> - 맛집 리스트, 카페 & 빵집 리스트</li>
+            <li>🌟<b>한정훈</b> - 맛집 추천</li>
+            <li>🌟<b>김태준</b> - 맛집 추천</li>
+            <li>🌟<b>전다솜</b> - 맛집 추천</li>
+            <li>🌟<b>박주형</b> - 맛집 추천</li>
+            <li>🌟<b>류운재</b> - 맛집 추천</li>
+            <li>🌟<b>이웅희</b> - 코드 작성</li>
+            <li></li>
+            <!-- 추가 기여자 정보를 여기에 넣으세요 -->
+        </ul>
+    </div>
+
+    <div id="disclaimer">
+        <h2>⚠️ 면책 조항 (Disclaimer)</h2>
+        <p>이 리스트는 개인적인 경험과 추천을 바탕으로 작성된 것이며, 기여자들은 언급된 식당, 카페, 빵집과 어떤 상업적 관계도 없음을 밝힙니다.</p>
+        <p>식당이나 카페로부터 어떠한 금전적 보상이나 혜택을 받지 않았으며, 특정 업장의 홍보를 목적으로 하지 않습니다.</p>
+        <p>리스트에 포함된 정보는 작성 시점을 기준으로 한 것이며, 실제 방문 시 정보가 다를 수 있습니다. 방문 전에 최신 정보를 확인하는 것을 권장합니다.</p>
+    </div>
+
+    <div id="contribution">
+        <h2>🤝 기여 방법</h2>
+        <p>이 리스트에 추가할 맛집이나 카페가 있다면 PR(Pull Request)로 자유롭게 기여해 주세요! 😄</p>
+        <ol>
+            <li>이 저장소를 포크(Fork)합니다.</li>
+            <li>새로운 브랜치를 만듭니다.</li>
+            <li>변경사항을 커밋합니다.</li>
+            <li>포크한 저장소에 푸시합니다.</li>
+            <li>이 저장소로 Pull Request를 생성합니다.</li>
+        </ol>
+        <p>여러분의 기여에 감사드립니다! 🙏</p>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            Papa.parse('daejeon_eats.csv', {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    var tableData = results.data.map(function(row) {
+                        var restaurantName = row['상호'];
+                        var visitKey = 'visit_' + restaurantName;
+                        var storedVisitCount = localStorage.getItem(visitKey);
+                        var visitCount = storedVisitCount !== null ? parseInt(storedVisitCount) : 0;
+                        
+                        return [
+                            '<div class="center-align">' + (row['지역'] || '') + '</div>',
+                            '<div class="center-align"><b>' + (restaurantName || '') + '</b></div>',
+                            '<div class="center-align no-wrap">' + (row['업종'] || '') + '</div>',
+                            row['메뉴 & 감상'] || '',
+                            '<div class="center-align">' +
+                            '<button class="visit-button minus">-</button>' +
+                            '<span class="visit-count">' + visitCount + '</span>' +
+                            '<button class="visit-button plus">+</button>' + 
+                            '</div>'
+                        ];
+                    });
+    
+                    var table = $('#restaurantTable').DataTable({
+                        data: tableData,
+                        columns: [
+                            { title: "🏙️ 지역" },
+                            { title: "🏠 상호", className: "no-wrap" },
+                            { title: "🍽️ 업종", className: "no-wrap" },
+                            { title: "📝 메뉴 & 감상" },
+                            { title: "🔢 방문 횟수" }
+                        ],
+                        language: {
+                            url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/Korean.json"
+                        },
+                        pageLength: -1,
+                        lengthChange: false,
+                        order: [[4, 'desc']],
+
+                        hover: false, 
+                        createdRow: function(row, data, dataIndex) {
+                            $(row).off('mouseenter mouseleave'); 
+                        }
+                    });
+    
+                    $('#restaurantTable').on('click', '.visit-button', function() {
+                        var $row = $(this).closest('tr');
+                        var restaurantName = $row.find('td:eq(1)').text().trim();
+                        var visitKey = 'visit_' + restaurantName;
+                        var $countSpan = $row.find('.visit-count');
+                        var visitCount = parseInt($countSpan.text());
+                        
+                        if ($(this).hasClass('plus')) {
+                            visitCount++;
+                        } else if ($(this).hasClass('minus')) {
+                            visitCount = Math.max(0, visitCount - 1);
+                        }
+                        
+                        localStorage.setItem(visitKey, visitCount);
+                        $countSpan.text(visitCount);
+                    });
+
+                    // DataTables 초기화 후 추가 스타일 적용
+                    $('#restaurantTable').on('init.dt', function() {
+                        $('#restaurantTable tbody').on('mouseenter', 'tr', function() {
+                            $(this).css('background-color', '#4646461f');
+                        }).on('mouseleave', 'tr', function() {
+                            $(this).css('background-color', '');
+                        });
+                    });
+
+                    // 페이지 변경 시에도 hover 효과 적용
+                    $('#restaurantTable').on('draw.dt', function() {
+                        $('#restaurantTable tbody').off('mouseenter mouseleave').on('mouseenter', 'tr', function() {
+                            $(this).css('background-color', '#4646461f');
+                        }).on('mouseleave', 'tr', function() {
+                            $(this).css('background-color', '');
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
