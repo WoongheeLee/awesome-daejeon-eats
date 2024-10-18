@@ -25,18 +25,11 @@
 
 ## 기여 방법
 
-1. 이 레포지토리를 포크(Fork)합니다.
-2. 새로운 브랜치를 만듭니다: `git checkout -b feature/new-restaurant`
-3. 변경사항을 커밋합니다: `git commit -am 'Add new restaurant'`
-4. 브랜치에 푸시합니다: `git push origin feature/new-restaurant`
-5. Pull Request를 제출합니다.
+* Issue나 PR 기능으로 리스트를 업데이트 할 수 있습니다.
 
 ## 기여자
 
-- 한규원 - 대전 맛집 리스트, 대전 카페 & 빵집 리스트
-- 한정훈 - 맛집 리스트
-- 김태준 - 맛집 리스트
-- 이웅희 - 코드 작성
+- 한규원, 한정훈, 김태준, 전다솜, 박주형, 류운재, 전병기, 이웅희
 
 ## 라이선스
 
