@@ -1,5 +1,7 @@
 # 🍽️ Awesome Daejeon Eats
 
+## https://woongheelee.github.io/awesome-daejeon-eats/
+
 대전의 맛집과 카페를 소개하는 웹사이트입니다. 이 프로젝트는 대전 지역의 다양한 맛집과 카페 정보를 공유하고, 방문자들이 자신의 방문 횟수를 기록할 수 있는 기능을 제공합니다.
 
 ## 주요 기능
