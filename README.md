@@ -14,7 +14,7 @@
 
 ## 사용 방법
 
-1. [Awesome Daejeon Eats 웹사이트](https://your-username.github.io/awesome-daejeon-eats)에 접속합니다.
+1. [Awesome Daejeon Eats 웹사이트](https://woongheelee.github.io/awesome-daejeon-eats)에 접속합니다.
 2. 지역, 상호, 업종 등으로 맛집을 검색하거나 정렬할 수 있습니다.
 3. 각 맛집의 메뉴와 감상을 확인하세요.
 4. 방문한 맛집의 방문 횟수를 기록할 수 있습니다 (브라우저 로컬 스토리지 사용).
