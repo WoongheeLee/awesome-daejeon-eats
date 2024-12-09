@@ -167,15 +167,15 @@
                     var tableData = results.data.map(function(row) {
                         var restaurantName = row['상호'];
                         var visitKey = 'visit_' + restaurantName;
-                        var storedVisitCount = localStorage.getItem(visitKey);
-                        var visitCount = storedVisitCount !== null ? parseInt(storedVisitCount) : 0;
+                        var visitCount = localStorage.getItem(visitKey) !== null ? 
+                            parseInt(localStorage.getItem(visitKey)) : 0;
                         
                         return [
                             '<div class="center-align">' + (row['지역'] || '') + '</div>',
                             '<div class="center-align"><b>' + (restaurantName || '') + '</b></div>',
                             '<div class="center-align no-wrap">' + (row['업종'] || '') + '</div>',
                             row['메뉴 & 감상'] || '',
-                            '<div class="center-align">' +
+                            '<div class="center-align" data-order="' + visitCount + '">' +
                             '<button class="visit-button minus">-</button>' +
                             '<span class="visit-count">' + visitCount + '</span>' +
                             '<button class="visit-button plus">+</button>' + 
@@ -190,7 +190,10 @@
                             { title: "🏠 상호", className: "no-wrap" },
                             { title: "🍽️ 업종", className: "no-wrap" },
                             { title: "📝 메뉴 & 감상" },
-                            { title: "🔢 방문 횟수" }
+                            { 
+                                title: "🔢 방문 횟수",
+                                type: 'num'  
+                            }
                         ],
                         language: {
                             url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/Korean.json"
