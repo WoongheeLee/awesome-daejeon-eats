@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,29 +8,87 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 1200px; margin: 0 auto; }
-        h1, h2 { color: #333; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f2f2f2; white-space: nowrap; }
-        .checkbox-cell { text-align: center; }
-        #contributors { margin-top: 30px; }
-        #contributors ul { list-style-type: none; padding: 0; }
-        #contributors li { margin-bottom: 10px; }
-        .dataTables_wrapper .dataTables_filter { margin-bottom: 10px; }
-        .dataTables_wrapper .dataTables_filter input { margin-left: 5px; }
-        #restaurantTable th { height: 50px; vertical-align: middle; }
-        .no-wrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; } /* 업종 열 스타일 */
-        .center-align{
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            white-space: nowrap;
+        }
+
+        .checkbox-cell {
             text-align: center;
         }
+
+        #contributors {
+            margin-top: 30px;
+        }
+
+        #contributors ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #contributors li {
+            margin-bottom: 10px;
+        }
+
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 10px;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            margin-left: 5px;
+        }
+
+        #restaurantTable th {
+            height: 50px;
+            vertical-align: middle;
+        }
+
+        .no-wrap {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+
+        /* 업종 열 스타일 */
+        .center-align {
+            text-align: center;
+        }
+
         .visit-count {
             font-weight: bold;
             color: #000000;
             margin: 0 5px;
         }
+
         .visit-button {
             cursor: pointer;
             padding: 2px 5px;
@@ -37,6 +96,7 @@
             border: 1px solid #ddd;
             border-radius: 3px;
         }
+
         .info-box {
             background-color: #e7f3fe;
             border-left: 6px solid #2196F3;
@@ -49,7 +109,7 @@
         table.dataTable.display tbody tr:hover {
             background-color: #2222221f !important;
         }
-        
+
         /* 깃허브 스타용 배너 */
         .github-banner {
             background-color: #24292e;
@@ -58,10 +118,12 @@
             padding: 10px;
             margin-bottom: 20px;
         }
+
         .github-banner a {
             color: white;
             text-decoration: none;
         }
+
         .github-star {
             display: inline-block;
             background-color: #fafbfc;
@@ -71,23 +133,24 @@
             font-weight: bold;
             margin-left: 10px;
         }
-
     </style>
 </head>
+
 <body>
     <div class="github-banner">
-        이 프로젝트가 유용하다고 생각하시나요? 
+        이 프로젝트가 유용하다고 생각하시나요?
         <a href="https://github.com/WoongheeLee/awesome-daejeon-eats" target="_blank">
             GitHub에서 스타를 눌러주세요!
             <span class="github-star">⭐ Star</span>
         </a>
     </div>
-    
+
     <h1>🍽️ <b>Awesome Daejeon Eats</b></h1>
 
     <div class="info-box">
-        <p><strong>📌 안내:</strong> 방문 횟수는 현재 사용 중인 기기의 브라우저에만 저장됩니다. 다른 기기나 브라우저에서는 이 정보가 공유되지 않으며, 브라우저 데이터를 삭제하면 초기화됩니다.</p>
-    </div>    
+        <p><strong>📌 안내:</strong> 방문 횟수는 현재 사용 중인 기기의 브라우저에만 저장됩니다. 다른 기기나 브라우저에서는 이 정보가 공유되지 않으며, 브라우저 데이터를 삭제하면
+            초기화됩니다.</p>
+    </div>
 
     <h2>목차</h2>
     <ul>
@@ -139,7 +202,8 @@
     <div id="contribution">
         <h2>🤝 기여 방법</h2>
         <p>이 리스트에 추가할 맛집이나 카페가 있다면 Issue나 PR(Pull Request)로 자유롭게 기여해 주세요! 😄</p>
-        <p>프로젝트 링크: <a href="https://github.com/WoongheeLee/awesome-daejeon-eats">awesome-daejeon-eats</a> (깃허브 가입/로그인 필요)</p>
+        <p>프로젝트 링크: <a href="https://github.com/WoongheeLee/awesome-daejeon-eats">awesome-daejeon-eats</a> (깃허브 가입/로그인
+            필요)</p>
         <h3>Issue로 기여하기 (간편한 방법)</h3>
         <ol>
             <li>저장소의 'Issues' 탭으로 이동합니다.</li>
@@ -159,17 +223,17 @@
     </div>
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             Papa.parse('daejeon_eats.csv', {
                 download: true,
                 header: true,
-                complete: function(results) {
-                    var tableData = results.data.map(function(row) {
+                complete: function (results) {
+                    var tableData = results.data.map(function (row) {
                         var restaurantName = row['상호'];
                         var visitKey = 'visit_' + restaurantName;
-                        var visitCount = localStorage.getItem(visitKey) !== null ? 
+                        var visitCount = localStorage.getItem(visitKey) !== null ?
                             parseInt(localStorage.getItem(visitKey)) : 0;
-                        
+
                         return [
                             '<div class="center-align">' + (row['지역'] || '') + '</div>',
                             '<div class="center-align"><b>' + (restaurantName || '') + '</b></div>',
@@ -178,11 +242,11 @@
                             '<div class="center-align" data-order="' + visitCount + '">' +
                             '<button class="visit-button minus">-</button>' +
                             '<span class="visit-count">' + visitCount + '</span>' +
-                            '<button class="visit-button plus">+</button>' + 
+                            '<button class="visit-button plus">+</button>' +
                             '</div>'
                         ];
                     });
-    
+
                     var table = $('#restaurantTable').DataTable({
                         data: tableData,
                         columns: [
@@ -190,9 +254,16 @@
                             { title: "🏠 상호", className: "no-wrap" },
                             { title: "🍽️ 업종", className: "no-wrap" },
                             { title: "📝 메뉴 & 감상" },
-                            { 
+                            {
                                 title: "🔢 방문 횟수",
-                                type: 'num'  
+                                type: 'num',
+                                render: function (data, type, row) {
+                                    if (type === 'sort' || type === 'type') {
+                                        // 정렬을 위해 숫자만 추출
+                                        return parseInt($(data).find('.visit-count').text());
+                                    }
+                                    return data;
+                                }
                             }
                         ],
                         language: {
@@ -201,44 +272,40 @@
                         pageLength: -1,
                         lengthChange: false,
                         order: [[4, 'desc']],
-
-                        hover: false, 
-                        createdRow: function(row, data, dataIndex) {
-                            $(row).off('mouseenter mouseleave'); 
-                        }
+                        hover: false
                     });
-    
-                    $('#restaurantTable').on('click', '.visit-button', function() {
+
+                    $('#restaurantTable').on('click', '.visit-button', function () {
                         var $row = $(this).closest('tr');
                         var restaurantName = $row.find('td:eq(1)').text().trim();
                         var visitKey = 'visit_' + restaurantName;
                         var $countSpan = $row.find('.visit-count');
                         var visitCount = parseInt($countSpan.text());
-                        
+
                         if ($(this).hasClass('plus')) {
                             visitCount++;
                         } else if ($(this).hasClass('minus')) {
                             visitCount = Math.max(0, visitCount - 1);
                         }
-                        
+
                         localStorage.setItem(visitKey, visitCount);
                         $countSpan.text(visitCount);
                     });
 
                     // DataTables 초기화 후 추가 스타일 적용
-                    $('#restaurantTable').on('init.dt', function() {
-                        $('#restaurantTable tbody').on('mouseenter', 'tr', function() {
+                    $('#restaurantTable').on('init.dt', function () {
+                        $('#restaurantTable tbody').on('mouseenter', 'tr', function () {
                             $(this).css('background-color', '#4646461f');
-                        }).on('mouseleave', 'tr', function() {
+                        }).on('mouseleave', 'tr', function () {
                             $(this).css('background-color', '');
                         });
                     });
 
                     // 페이지 변경 시에도 hover 효과 적용
-                    $('#restaurantTable').on('draw.dt', function() {
-                        $('#restaurantTable tbody').off('mouseenter mouseleave').on('mouseenter', 'tr', function() {
+                    $('#restaurantTable').on('draw.dt', function () {
+                        $('#restaurantTable tbody').off('mouseenter mouseleave').on('mouseenter', 'tr', function () {
                             $(this).css('background-color', '#4646461f');
-                        }).on('mouseleave', 'tr', function() {
+                        }).on('mouseleave', 'tr', function () {
                             $(this).css('background-color', '');
                         });
                     });
@@ -247,4 +314,5 @@
         });
     </script>
 </body>
+
 </html>
