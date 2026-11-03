@@ -119,6 +119,15 @@
             margin-bottom: 20px;
         }
 
+        .map-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .map-link:hover {
+            text-decoration: underline;
+        }
+
         .github-banner a {
             color: white;
             text-decoration: none;
@@ -216,6 +225,18 @@
     </div>
 
     <script>
+        // 상호를 누르면 네이버 지도 검색 결과를 새 탭으로 연다
+        function naverMapLink(region, name) {
+            if (!name) return '';
+            region = region || '';
+            // 대전 밖(세종, 청주, 충북 등)은 지역명 그대로, 대전 동네는 '대전'을 앞에 붙여 검색
+            var outside = /세종|청주|충북|충남|공주|논산|옥천/.test(region);
+            var query = (outside ? '' : '대전 ') + region + ' ' + name;
+            return '<a class="map-link" href="https://map.naver.com/p/search/' +
+                encodeURIComponent(query.trim()) + '" target="_blank" rel="noopener" title="네이버 지도에서 보기">' +
+                name + '</a>';
+        }
+
         $(document).ready(function () {
             Papa.parse('daejeon_eats.csv', {
                 download: true,
@@ -229,7 +250,7 @@
 
                         return [
                             '<div class="center-align">' + (row['지역'] || '') + '</div>',
-                            '<div class="center-align"><b>' + (restaurantName || '') + '</b></div>',
+                            '<div class="center-align"><b>' + naverMapLink(row['지역'], restaurantName) + '</b></div>',
                             '<div class="center-align no-wrap">' + (row['업종'] || '') + '</div>',
                             row['메뉴 & 감상'] || '',
                             '<div class="center-align" data-order="' + visitCount + '">' +
