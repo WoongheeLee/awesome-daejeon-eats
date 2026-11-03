@@ -142,6 +142,51 @@
             font-weight: bold;
             margin-left: 10px;
         }
+        /* 필터 & 방문 기록 도구 */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            margin: 8px 0;
+        }
+
+        .chip {
+            cursor: pointer;
+            padding: 4px 10px;
+            border: 1px solid #ccc;
+            border-radius: 16px;
+            background: #fff;
+            font-size: 14px;
+        }
+
+        .chip small {
+            color: #888;
+        }
+
+        .chip.active {
+            background: #2196F3;
+            border-color: #2196F3;
+            color: #fff;
+        }
+
+        .chip.active small {
+            color: #e3f2fd;
+        }
+
+        .tool-button {
+            cursor: pointer;
+            padding: 3px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f8f8;
+            font-size: 13px;
+        }
+
+        #visitStatus {
+            color: #666;
+            font-size: 13px;
+        }
     </style>
 </head>
 
@@ -158,8 +203,9 @@
 
     <div class="info-box">
         <p><strong>📌 안내:</strong> 방문 횟수는 현재 사용 중인 기기의 브라우저에만 저장됩니다. 다른 기기나 브라우저에서는 이 정보가 공유되지 않으며, 브라우저 데이터를 삭제하면
-            초기화됩니다.</p>
-        <p><strong>🗺️ 지도:</strong> 상호 이름을 누르면 네이버 지도 검색 결과가 새 탭으로 열립니다. 같은 이름의 가게가 여러 곳이면 지역을 보고 골라 주세요.</p>
+            초기화됩니다. 표 위의 <b>📤 내보내기 / 📥 불러오기</b>로 기록을 파일로 옮길 수 있고, 크롬·엣지에서는 <b>💾 파일에 자동 저장</b>으로 고른 파일에 계속 저장됩니다.</p>
+        <p><strong>🗺️ 지도:</strong> 상호 이름을 누르면 네이버 지도가 새 탭으로 열립니다. 링크가 등록된 곳은 가게 페이지로, 나머지는 검색 결과로 열리니 같은 이름의 가게가 여러 곳이면 지역을 보고 골라 주세요.</p>
+        <p><strong>🔎 필터:</strong> 업종 버튼이나 지역 선택으로 원하는 곳만 볼 수 있습니다.</p>
     </div>
 
     <h2>목차</h2>
@@ -169,6 +215,20 @@
     </ul>
 
     <h2 id="restaurants">대전 맛집 목록</h2>
+    <div class="toolbar" id="categoryChips"></div>
+    <div class="toolbar">
+        <label>🏙️ 지역 <select id="regionSelect"></select></label>
+    </div>
+    <div class="toolbar">
+        <span>🔢 방문 기록:</span>
+        <button class="tool-button" id="exportVisits" title="방문 기록을 JSON 파일로 내려받기">📤 내보내기</button>
+        <button class="tool-button" id="importVisits" title="내보낸 JSON 파일로 방문 기록 덮어쓰기">📥 불러오기</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+        <button class="tool-button" id="connectFile" title="고른 파일에 방문 기록을 계속 저장 (크롬·엣지)">💾 파일에 자동 저장</button>
+        <button class="tool-button" id="reconnectFile" hidden></button>
+        <button class="tool-button" id="disconnectFile" hidden>연결 끊기</button>
+        <span id="visitStatus"></span>
+    </div>
     <table id="restaurantTable" class="display">
         <thead>
             <tr>
@@ -226,58 +286,297 @@
     </div>
 
     <script>
-        // 상호를 누르면 네이버 지도 검색 결과를 새 탭으로 연다
-        function naverMapLink(region, name) {
-            if (!name) return '';
-            region = region || '';
-            // 대전 밖(세종, 청주, 충북 등)은 지역명 그대로, 대전 동네는 '대전'을 앞에 붙여 검색
-            var outside = /세종|청주|충북|충남|공주|논산|옥천/.test(region);
-            var query = (outside ? '' : '대전 ') + region + ' ' + name;
-            return '<a class="map-link" href="https://map.naver.com/p/search/' +
-                encodeURIComponent(query.trim()) + '" target="_blank" rel="noopener" title="네이버 지도에서 보기">' +
-                name + '</a>';
+        // ---------- 방문 기록 (localStorage: 'visit_' + 상호) ----------
+        var VISIT_PREFIX = 'visit_';
+
+        function getVisit(name) {
+            var v = parseInt(localStorage.getItem(VISIT_PREFIX + name));
+            return isNaN(v) ? 0 : v;
+        }
+
+        function setVisit(name, n) {
+            if (n > 0) localStorage.setItem(VISIT_PREFIX + name, n);
+            else localStorage.removeItem(VISIT_PREFIX + name);
+        }
+
+        function allVisits() {
+            var out = {};
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k.indexOf(VISIT_PREFIX) !== 0) continue;
+                var name = k.slice(VISIT_PREFIX.length);
+                if (getVisit(name) > 0) out[name] = getVisit(name);
+            }
+            return out;
+        }
+
+        // 방문 기록을 visits 객체 그대로 바꿔치기
+        function replaceVisits(visits) {
+            Object.keys(allVisits()).forEach(function (name) { setVisit(name, 0); });
+            Object.keys(visits).forEach(function (name) { setVisit(name, parseInt(visits[name]) || 0); });
+        }
+
+        // 두 기록 중 큰 값을 남김 (처음 파일을 연결할 때 어느 쪽 기록도 잃지 않도록)
+        function mergeVisits(visits) {
+            Object.keys(visits).forEach(function (name) {
+                setVisit(name, Math.max(getVisit(name), parseInt(visits[name]) || 0));
+            });
+        }
+
+        function visitsJson() {
+            return JSON.stringify({
+                app: 'awesome-daejeon-eats',
+                updated: new Date().toISOString(),
+                visits: allVisits()
+            }, null, 2) + '\n';
+        }
+
+        function parseVisitsText(text) {
+            if (!text.trim()) return null;
+            var j = JSON.parse(text);
+            return j.visits || {};
+        }
+
+        function setStatus(msg) {
+            $('#visitStatus').text(msg);
+        }
+
+        // ---------- 파일 자동 저장 (크롬·엣지 File System Access API) ----------
+        var fileHandle = null;
+        var saveTimer = null;
+
+        function idb(mode, fn) {
+            return new Promise(function (resolve, reject) {
+                var open = indexedDB.open('awesome-daejeon-eats', 1);
+                open.onupgradeneeded = function () { open.result.createObjectStore('kv'); };
+                open.onerror = function () { reject(open.error); };
+                open.onsuccess = function () {
+                    var tx = open.result.transaction('kv', mode);
+                    var req = fn(tx.objectStore('kv'));
+                    tx.oncomplete = function () { resolve(req && req.result); };
+                    tx.onerror = function () { reject(tx.error); };
+                };
+            });
+        }
+
+        async function readHandle(h) {
+            var f = await h.getFile();
+            return parseVisitsText(await f.text());
+        }
+
+        async function writeFile() {
+            if (!fileHandle) return;
+            try {
+                var w = await fileHandle.createWritable();
+                await w.write(visitsJson());
+                await w.close();
+                setStatus('💾 ' + fileHandle.name + '에 저장됨 (' + new Date().toLocaleTimeString() + ')');
+            } catch (e) {
+                setStatus('⚠️ 파일 저장 실패: ' + e.message + ' — 다시 연결해 주세요');
+            }
+        }
+
+        function onVisitsChanged() {
+            if (!fileHandle) return;
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(writeFile, 500);
+        }
+
+        function showFileButtons() {
+            $('#connectFile').toggle(!fileHandle);
+            $('#disconnectFile').toggle(!!fileHandle);
+        }
+
+        // 연결된 파일을 기준으로 방문 기록을 맞춘다 (merge면 큰 값 유지, 아니면 파일 내용으로 덮어씀)
+        async function useHandle(h, merge) {
+            var fromFile = null;
+            try { fromFile = await readHandle(h); } catch (e) { fromFile = null; }
+            if (fromFile) {
+                if (merge) mergeVisits(fromFile); else replaceVisits(fromFile);
+            }
+            fileHandle = h;
+            await writeFile();
+            showFileButtons();
+            refreshVisits();
+        }
+
+        async function connectFile() {
+            try {
+                var h = await window.showSaveFilePicker({
+                    suggestedName: 'my_visits.json',
+                    types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+                });
+                await idb('readwrite', function (s) { return s.put(h, 'visitFile'); });
+                await useHandle(h, true);
+            } catch (e) {
+                if (e.name !== 'AbortError') setStatus('⚠️ 연결 실패: ' + e.message);
+            }
+        }
+
+        async function restoreFile() {
+            if (!('showSaveFilePicker' in window)) {
+                $('#connectFile').hide();
+                return;
+            }
+            var h = null;
+            try { h = await idb('readonly', function (s) { return s.get('visitFile'); }); } catch (e) { }
+            if (!h) { showFileButtons(); return; }
+            var perm = await h.queryPermission({ mode: 'readwrite' });
+            if (perm === 'granted') {
+                await useHandle(h, false);
+                return;
+            }
+            // 권한은 사용자가 버튼을 눌러야 다시 받을 수 있다
+            $('#connectFile').hide();
+            $('#reconnectFile').text('🔄 ' + h.name + ' 다시 연결').show().off('click').on('click', async function () {
+                if (await h.requestPermission({ mode: 'readwrite' }) === 'granted') {
+                    $('#reconnectFile').hide();
+                    await useHandle(h, false);
+                }
+            });
+        }
+
+        async function disconnectFile() {
+            fileHandle = null;
+            await idb('readwrite', function (s) { return s.delete('visitFile'); });
+            showFileButtons();
+            setStatus('파일 연결을 끊었습니다 (기록은 브라우저에 남아 있음)');
+        }
+
+        function exportVisits() {
+            var blob = new Blob([visitsJson()], { type: 'application/json' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'my_visits.json';
+            a.click();
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+            setStatus('📤 ' + Object.keys(allVisits()).length + '곳 기록을 내보냈습니다');
+        }
+
+        function importVisits(file) {
+            file.text().then(function (text) {
+                var visits = parseVisitsText(text);
+                if (!visits) throw new Error('빈 파일');
+                replaceVisits(visits);
+                refreshVisits();
+                onVisitsChanged();
+                setStatus('📥 ' + Object.keys(visits).length + '곳 기록을 불러왔습니다');
+            }).catch(function (e) {
+                setStatus('⚠️ 불러오기 실패: ' + e.message);
+            });
+        }
+
+        // ---------- 표 ----------
+        var table = null;
+
+        function refreshVisits() {
+            if (table) table.rows().invalidate().draw(false);
+        }
+
+        function escapeHtml(s) {
+            return String(s || '').replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
+        function escapeRegex(s) {
+            return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // 상호를 누르면 네이버 지도를 새 탭으로 연다: CSV에 링크가 있으면 그 가게 페이지, 없으면 검색 결과
+        function naverMapLink(row) {
+            if (!row.name) return '';
+            var url = row.link;
+            if (!url) {
+                // 대전 밖(세종, 청주, 충북 등)은 지역명 그대로, 대전 동네는 '대전'을 앞에 붙여 검색
+                var outside = /세종|청주|충북|충남|공주|논산|옥천/.test(row.region);
+                var query = ((outside ? '' : '대전 ') + row.region + ' ' + row.name).trim();
+                url = 'https://map.naver.com/p/search/' + encodeURIComponent(query);
+            }
+            return '<a class="map-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener" title="' +
+                (row.link ? '네이버 지도에서 보기' : '네이버 지도에서 검색') + '">' + escapeHtml(row.name) + '</a>';
+        }
+
+        function countBy(rows, key) {
+            var c = {};
+            rows.forEach(function (r) { if (r[key]) c[r[key]] = (c[r[key]] || 0) + 1; });
+            return Object.keys(c).sort(function (a, b) { return c[b] - c[a] || a.localeCompare(b, 'ko'); })
+                .map(function (k) { return { value: k, count: c[k] }; });
+        }
+
+        function buildFilters(rows) {
+            var $chips = $('#categoryChips');
+            $chips.append('<button class="chip active" data-cat="">전체 <small>' + rows.length + '</small></button>');
+            countBy(rows, 'cat').forEach(function (c) {
+                $chips.append('<button class="chip" data-cat="' + escapeHtml(c.value) + '">' +
+                    escapeHtml(c.value) + ' <small>' + c.count + '</small></button>');
+            });
+            var $sel = $('#regionSelect');
+            $sel.append('<option value="">전체</option>');
+            countBy(rows, 'region').forEach(function (r) {
+                $sel.append('<option value="' + escapeHtml(r.value) + '">' + escapeHtml(r.value) + ' (' + r.count + ')</option>');
+            });
+
+            $chips.on('click', '.chip', function () {
+                $chips.find('.chip').removeClass('active');
+                $(this).addClass('active');
+                var cat = $(this).attr('data-cat');
+                table.column(2).search(cat ? '^' + escapeRegex(cat) + '$' : '', true, false).draw();
+            });
+            $sel.on('change', function () {
+                var region = $(this).val();
+                table.column(0).search(region ? '^' + escapeRegex(region) + '$' : '', true, false).draw();
+            });
         }
 
         $(document).ready(function () {
+            $('#connectFile').on('click', connectFile);
+            $('#disconnectFile').on('click', disconnectFile);
+            $('#exportVisits').on('click', exportVisits);
+            $('#importVisits').on('click', function () { $('#importFile').click(); });
+            $('#importFile').on('change', function () {
+                if (this.files[0]) importVisits(this.files[0]);
+                this.value = '';
+            });
+
             Papa.parse('daejeon_eats.csv', {
                 download: true,
                 header: true,
+                skipEmptyLines: true,
                 complete: function (results) {
-                    var tableData = results.data.map(function (row) {
-                        var restaurantName = row['상호'];
-                        var visitKey = 'visit_' + restaurantName;
-                        var visitCount = localStorage.getItem(visitKey) !== null ?
-                            parseInt(localStorage.getItem(visitKey)) : 0;
-
-                        return [
-                            '<div class="center-align">' + (row['지역'] || '') + '</div>',
-                            '<div class="center-align"><b>' + naverMapLink(row['지역'], restaurantName) + '</b></div>',
-                            '<div class="center-align no-wrap">' + (row['업종'] || '') + '</div>',
-                            row['메뉴 & 감상'] || '',
-                            '<div class="center-align" data-order="' + visitCount + '">' +
-                            '<button class="visit-button minus">-</button>' +
-                            '<span class="visit-count">' + visitCount + '</span>' +
-                            '<button class="visit-button plus">+</button>' +
-                            '</div>'
-                        ];
+                    var rows = results.data.map(function (row) {
+                        return {
+                            region: row['지역'] || '',
+                            name: row['상호'] || '',
+                            cat: row['업종'] || '',
+                            note: row['메뉴 & 감상'] || '',
+                            link: row['네이버 지도'] || ''
+                        };
                     });
 
-                    var table = $('#restaurantTable').DataTable({
-                        data: tableData,
+                    table = $('#restaurantTable').DataTable({
+                        data: rows,
                         columns: [
-                            { title: "🏙️ 지역" },
-                            { title: "🏠 상호", className: "no-wrap" },
-                            { title: "🍽️ 업종", className: "no-wrap" },
-                            { title: "📝 메뉴 & 감상" },
+                            { title: "🏙️ 지역", data: 'region', className: 'center-align' },
                             {
-                                title: "🔢 방문 횟수",
-                                type: 'num',
+                                title: "🏠 상호", data: 'name', className: 'center-align no-wrap',
                                 render: function (data, type, row) {
-                                    if (type === 'sort' || type === 'type') {
-                                        // 정렬을 위해 숫자만 추출
-                                        return parseInt($(data).find('.visit-count').text());
-                                    }
-                                    return data;
+                                    return type === 'display' ? '<b>' + naverMapLink(row) + '</b>' : data;
+                                }
+                            },
+                            { title: "🍽️ 업종", data: 'cat', className: 'center-align no-wrap' },
+                            {
+                                title: "📝 메뉴 & 감상", data: 'note',
+                                render: function (data, type) { return type === 'display' ? escapeHtml(data) : data; }
+                            },
+                            {
+                                title: "🔢 방문 횟수", data: 'name', type: 'num', className: 'center-align',
+                                render: function (data, type) {
+                                    if (type === 'sort' || type === 'type') return getVisit(data);
+                                    if (type === 'filter') return '';
+                                    return '<button class="visit-button minus">-</button>' +
+                                        '<span class="visit-count">' + getVisit(data) + '</span>' +
+                                        '<button class="visit-button plus">+</button>';
                                 }
                             }
                         ],
@@ -290,33 +589,19 @@
                         hover: false
                     });
 
+                    buildFilters(rows);
+                    restoreFile();
+
                     $('#restaurantTable').on('click', '.visit-button', function () {
-                        var $row = $(this).closest('tr');
-                        var restaurantName = $row.find('td:eq(1)').text().trim();
-                        var visitKey = 'visit_' + restaurantName;
-                        var $countSpan = $row.find('.visit-count');
-                        var visitCount = parseInt($countSpan.text());
-
-                        if ($(this).hasClass('plus')) {
-                            visitCount++;
-                        } else if ($(this).hasClass('minus')) {
-                            visitCount = Math.max(0, visitCount - 1);
-                        }
-
-                        localStorage.setItem(visitKey, visitCount);
-                        $countSpan.text(visitCount);
+                        var row = table.row($(this).closest('tr'));
+                        var name = row.data().name;
+                        var n = getVisit(name) + ($(this).hasClass('plus') ? 1 : -1);
+                        setVisit(name, Math.max(0, n));
+                        row.invalidate(); // 정렬은 다시 하지 않음 (누르는 중에 줄이 움직이지 않도록)
+                        onVisitsChanged();
                     });
 
-                    // DataTables 초기화 후 추가 스타일 적용
-                    $('#restaurantTable').on('init.dt', function () {
-                        $('#restaurantTable tbody').on('mouseenter', 'tr', function () {
-                            $(this).css('background-color', '#4646461f');
-                        }).on('mouseleave', 'tr', function () {
-                            $(this).css('background-color', '');
-                        });
-                    });
-
-                    // 페이지 변경 시에도 hover 효과 적용
+                    // 줄 hover 효과 (다시 그릴 때마다 적용)
                     $('#restaurantTable').on('draw.dt', function () {
                         $('#restaurantTable tbody').off('mouseenter mouseleave').on('mouseenter', 'tr', function () {
                             $(this).css('background-color', '#4646461f');
