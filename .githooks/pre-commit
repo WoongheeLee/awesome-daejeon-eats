@@ -1,0 +1,6 @@
+#!/bin/sh
+# daejeon_eats.csv가 커밋에 포함되면 형식 검사. 활성화: git config core.hooksPath .githooks
+if git diff --cached --name-only | grep -q '^daejeon_eats.csv$'; then
+    PY=python; command -v python >/dev/null 2>&1 || PY=python3
+    $PY scripts/check_csv.py || { echo "CSV 검사 실패 — 위 오류를 고친 뒤 다시 커밋하세요."; exit 1; }
+fi
