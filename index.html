@@ -364,8 +364,13 @@
             return parseVisitsText(await f.text());
         }
 
-        async function writeFile() {
+        async function writeFile(skipCheck) {
             if (!fileHandle) return;
+            try {
+                if (!skipCheck) await fileHandle.getFile(); // 파일이 옮겨졌으면 여기서 NotFoundError (옛 자리에 새로 만들지 않음)
+            } catch (e) {
+                if (e.name === 'NotFoundError') { forgetMissingFile(fileHandle.name); return; }
+            }
             try {
                 var w = await fileHandle.createWritable();
                 await w.write(visitsJson());
@@ -379,7 +384,7 @@
         function onVisitsChanged() {
             if (!fileHandle) return;
             clearTimeout(saveTimer);
-            saveTimer = setTimeout(writeFile, 500);
+            saveTimer = setTimeout(function () { writeFile(false); }, 500);
         }
 
         function showFileButtons() {
@@ -387,15 +392,30 @@
             $('#disconnectFile').toggle(!!fileHandle);
         }
 
-        // 연결된 파일을 기준으로 방문 기록을 맞춘다 (merge면 큰 값 유지, 아니면 파일 내용으로 덮어씀)
-        async function useHandle(h, merge) {
+        function forgetMissingFile(name) {
+            fileHandle = null;
+            idb('readwrite', function (s) { return s.delete('visitFile'); });
+            $('#reconnectFile').hide();
+            showFileButtons();
+            setStatus('⚠️ ' + name + ' 파일이 원래 자리에 없습니다 (옮겼거나 지움) — 💾 파일에 자동 저장으로 새로 골라 주세요');
+        }
+
+        // fresh=true: 방금 파일 선택 창에서 고른 파일 (기록을 합침)
+        // fresh=false: 예전에 연결했던 파일 (파일 내용으로 맞춤, 파일이 사라졌으면 새로 만들지 않음)
+        async function useHandle(h, fresh) {
             var fromFile = null;
-            try { fromFile = await readHandle(h); } catch (e) { fromFile = null; }
+            try {
+                fromFile = await readHandle(h);
+            } catch (e) {
+                if (!fresh && e.name === 'NotFoundError') { forgetMissingFile(h.name); return; }
+                fromFile = null;
+            }
+            var merge = fresh;
             if (fromFile) {
                 if (merge) mergeVisits(fromFile); else replaceVisits(fromFile);
             }
             fileHandle = h;
-            await writeFile();
+            await writeFile(fresh);
             showFileButtons();
             refreshVisits();
         }
@@ -407,6 +427,7 @@
                     types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
                 });
                 await idb('readwrite', function (s) { return s.put(h, 'visitFile'); });
+                $('#reconnectFile').hide();
                 await useHandle(h, true);
             } catch (e) {
                 if (e.name !== 'AbortError') setStatus('⚠️ 연결 실패: ' + e.message);
@@ -426,8 +447,8 @@
                 await useHandle(h, false);
                 return;
             }
-            // 권한은 사용자가 버튼을 눌러야 다시 받을 수 있다
-            $('#connectFile').hide();
+            // 권한은 사용자가 버튼을 눌러야 다시 받을 수 있다 (다른 파일을 고를 수 있게 💾 버튼도 보여 줌)
+            $('#connectFile').show();
             $('#reconnectFile').text('🔄 ' + h.name + ' 다시 연결').show().off('click').on('click', async function () {
                 if (await h.requestPermission({ mode: 'readwrite' }) === 'granted') {
                     $('#reconnectFile').hide();
